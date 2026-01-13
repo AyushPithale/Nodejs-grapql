@@ -1,56 +1,33 @@
-const PRODUCTS = require("../data/products");
+const Product = require("../models/Product");
 
 const resolvers = {
   Query: {
-    products: () => PRODUCTS,
-    product: (_, { id }) =>
-      PRODUCTS.find((product) => product.id == Number(id)),
+    products: async () => await Product.find(),
+    product: async (_, { id }) => await Product.findById(id),
   },
 
   Mutation: {
-    createProduct: (_, {title, category, price, inStock}) => {
-      console.log("craetePRoduct",{title, category, price, inStock} )
-       const newProduct = {
-        id : String(PRODUCTS.length + 1),
+    createProduct: async (_, { title, category, price, inStock }) => {
+      console.log("craetePRoduct", { title, category, price, inStock });
+      const newProduct = {
         title,
         category,
         price,
-        inStock
-       }
+        inStock,
+      };
 
-       PRODUCTS.push(newProduct)
-       return newProduct
+      const newlyCreadetdProduct = new Product(newProduct);
+      return await newlyCreadetdProduct.save();
     },
 
-    deleteProduct: (_, {id}) => {
-      const productIndex = PRODUCTS.findIndex((product) => product.id === id)
-      console.log("deletedProductIndex", productIndex)
-      if(productIndex === -1)  return false
-      
-      PRODUCTS.splice(productIndex, 1)
-
-      return true
-
+    updateProduct: async (_, { id, ...updates }) => {
+      return await Product.findByIdAndUpdate(id, updates, { new: true });
     },
 
-
-    updateProduct: (_, {id, ...updates}) => {
-     const productIndex = PRODUCTS.findIndex((product) => product.id === id)
-      console.log("updateProductNndex", productIndex)
-        if(productIndex === -1)  return null
-
-      
-
-        const updatedProduct = {
-          ...PRODUCTS[productIndex],
-          ...updates
-        }
-
-        PRODUCTS[productIndex] = updatedProduct
-        return updatedProduct
-    }
-  }
+    deleteProduct: async (_, { id }) => {
+      return await Product.findByIdAndDelete(id);
+    },
+  },
 };
-
 
 module.exports = resolvers;
